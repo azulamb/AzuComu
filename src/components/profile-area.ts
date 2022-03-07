@@ -92,7 +92,7 @@ interface ProfileAreaEventData
 				':host > div > footer > button { font-size: 1rem; cursor: pointer; background: #8cf5eb; border: none; border-radius: 0.2rem; margin: 0 0.1rem; }',
 				':host > div > footer > button.preview::before { content: "プレビュー"; }',
 				':host > div > footer > button.download::before { content: "ダウンロード"; }',
-				':host > div > div { width: 100%; overflow: hidden; position: relative; }',
+				':host > div > div { width: min( 100vw, calc( ( 100vh - 2rem ) * 900 / 506 ) ); overflow: hidden; position: relative; margin: auto; }',
 				':host > div > div > img { opacity: 0; display: block; width: 100%; }',
 				':host > div > div > canvas { display: block; width: 100%; top: 0; left: 0; position: absolute; }',
 				'file-area { position: absolute; display: block; background: transparent; --border: 4px solid aqua; }',

@@ -24,9 +24,9 @@
                     ':host( [loading] ) > div, :host( [loaded] ) > div { display: block; width: 100%; height: 100%; }',
                     '.hover { display: none; }',
                     ':host( :hover ) .hover, .label { display: block; width: 100%; height: 100%; background: rgba( 0, 0, 0, 0.5 ); position: absolute; top: 0; left: 0; pointer-events: none; display: flex; justify-content: center; align-items: center; text-align: center; }',
-                    'label .label::before { content: "ファイル選択"; }',
-                    ':host( [loading] ) > div .hover::before { content: "読込中"; }',
-                    ':host( [loaded] ) > div .hover::before { content: "編集"; }',
+                    'label .label::before { content: "ファイル選択"; color: white; }',
+                    ':host( [loading] ) > div .hover::before { content: "読込中"; color: white; }',
+                    ':host( [loaded] ) > div .hover::before { content: "編集"; color: white; }',
                 ].join('');
             this.file = document.createElement('input');
             this.file.type = 'file';
@@ -223,7 +223,7 @@
                     ':host > div > footer > button { font-size: 1rem; cursor: pointer; background: #8cf5eb; border: none; border-radius: 0.2rem; margin: 0 0.1rem; }',
                     ':host > div > footer > button.preview::before { content: "プレビュー"; }',
                     ':host > div > footer > button.download::before { content: "ダウンロード"; }',
-                    ':host > div > div { width: 100%; overflow: hidden; position: relative; }',
+                    ':host > div > div { width: min( 100vw, calc( ( 100vh - 2rem ) * 900 / 506 ) ); overflow: hidden; position: relative; margin: auto; }',
                     ':host > div > div > img { opacity: 0; display: block; width: 100%; }',
                     ':host > div > div > canvas { display: block; width: 100%; top: 0; left: 0; position: absolute; }',
                     'file-area { position: absolute; display: block; background: transparent; --border: 4px solid aqua; }',
@@ -554,15 +554,15 @@
             const style = document.createElement('style');
             style.innerHTML =
                 [
-                    ':host { display: none; width: 100%; height: 100%; top: 0; left: 0; position: absolute; background: rgba( 0, 0, 0, 0.8 ); overflow: hidden; }',
+                    ':host { display: none; width: 100%; height: 100%; top: 0; left: 0; position: absolute; background: rgba( 0, 0, 0, 0.8 ); overflow: hidden; --button-text: "Complete"; --button-border: none; --button-size: 1rem; --button-back: lightgray; --button-radius: 0.2rem; }',
                     ':host( [show] ) { display: block; }',
                     ':host > div { display: block; width: 100%; height: 100%; box-sizing: border-box; padding: 1rem; }',
                     ':host > div > div { display: grid; grid-template-columns: 100%; grid-template-rows: calc(100% - 2rem) 2rem; width: 100%; height: 100%; }',
                     '.main { position: relative; }',
                     '.dragarea { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }',
                     'canvas { object-fit: contain; width: 100%; height: 100%; /*pointer-events: none; user-select: none; user-drag: none;*/ }',
-                    'button { cursor: pointer; }',
-                    'button::before { content: "完了"; }',
+                    'button { cursor: pointer; border: var( --button-border ); font-size: var( --button-size ); background: var( --button-back ); border-radius: var( --button-radius ); }',
+                    'button::before { content: var( --button-text ); }',
                 ].join('');
             this.canvas = document.createElement('canvas');
             const dragarea = document.createElement('div');
@@ -613,12 +613,27 @@
         }
         initMove(dragarea) {
             let onmove = null;
-            dragarea.addEventListener('mousedown', (event) => {
+            let touchMode = false;
+            const getSelectPosition = (event) => {
+                if (event.offsetX !== undefined) {
+                    return {
+                        x: event.offsetX,
+                        y: event.offsetY,
+                    };
+                }
+                const touch = event.changedTouches[0];
+                const bounds = dragarea.getBoundingClientRect();
+                return {
+                    x: touch.clientX - bounds.left,
+                    y: touch.clientY - bounds.top,
+                };
+            };
+            const begin = (position) => {
                 if (onmove) {
                     dragarea.removeEventListener('mousemove', onmove);
                     onmove = null;
                 }
-                const [x, y] = this.getPos(event.offsetX, event.offsetY, dragarea.offsetWidth, dragarea.offsetHeight);
+                const [x, y] = this.getPos(position.x, position.y, dragarea.offsetWidth, dragarea.offsetHeight);
                 const pos = [
                     { type: 1, length: 0, x: this.params.x, y: this.params.y },
                     { type: 2, length: 0, x: this.params.X, y: this.params.y },
@@ -636,32 +651,61 @@
                 const outPoint = dis * dis + dis * dis < pos.length;
                 const outBox = x < this.params.x || this.params.X < x || y < this.params.y || this.params.Y < y;
                 if (outPoint && outBox) {
-                    return;
+                    return -1;
                 }
                 if (outPoint && !outBox) {
                     pos.type = 0;
                 }
                 this.params.sx = x;
                 this.params.sy = y;
-                onmove = (event) => { this.onMove(event, dragarea, pos.type); };
+                return pos.type;
+            };
+            const end = () => {
+                touchMode = false;
+                if (onmove) {
+                    dragarea.removeEventListener('mousemove', onmove);
+                    dragarea.removeEventListener('touchmove', onmove);
+                    onmove = null;
+                }
+            };
+            dragarea.addEventListener('touchstart', (event) => {
+                touchMode = true;
+                const position = getSelectPosition(event);
+                const type = begin(position);
+                if (type < 0) {
+                    return;
+                }
+                onmove = (event) => {
+                    const position = getSelectPosition(event);
+                    this.onMove(position, dragarea, type);
+                };
+                dragarea.addEventListener('touchmove', onmove);
+                this.onMove(position, dragarea, type);
+            });
+            dragarea.addEventListener('touchend', end);
+            dragarea.addEventListener('mousedown', (event) => {
+                if (touchMode) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    return;
+                }
+                const position = getSelectPosition(event);
+                const type = begin(position);
+                if (type < 0) {
+                    return;
+                }
+                onmove = (event) => {
+                    const position = getSelectPosition(event);
+                    this.onMove(position, dragarea, type);
+                };
                 dragarea.addEventListener('mousemove', onmove);
-                this.onMove(event, dragarea, pos.type);
+                this.onMove(position, dragarea, type);
             });
-            dragarea.addEventListener('mouseup', () => {
-                if (onmove) {
-                    dragarea.removeEventListener('mousemove', onmove);
-                    onmove = null;
-                }
-            });
-            dragarea.addEventListener('mouseout', () => {
-                if (onmove) {
-                    dragarea.removeEventListener('mousemove', onmove);
-                    onmove = null;
-                }
-            });
+            dragarea.addEventListener('mouseup', end);
+            dragarea.addEventListener('mouseout', end);
         }
-        onMove(event, dragarea, type) {
-            const [x, y] = this.getPos(event.offsetX, event.offsetY, dragarea.offsetWidth, dragarea.offsetHeight);
+        onMove(position, dragarea, type) {
+            const [x, y] = this.getPos(position.x, position.y, dragarea.offsetWidth, dragarea.offsetHeight);
             const fixAspect = 0 < this.width && 0 < this.height;
             switch (type) {
                 case 0:
@@ -822,6 +866,28 @@
             context.fillRect(0, dy, dx, dh);
             context.fillRect(dx + dw, dy, width - dx - dw, dh);
             context.fillRect(0, dy + dh, width, height - dy - dh);
+            context.strokeStyle = 'white';
+            context.lineWidth = 4;
+            context.beginPath();
+            context.moveTo(dx, dy);
+            context.arc(dx, dy, this.distance, 0.5 * Math.PI, 0);
+            context.closePath();
+            context.stroke();
+            context.beginPath();
+            context.moveTo(this.params.X, dy);
+            context.arc(this.params.X, dy, this.distance, Math.PI, 2.5 * Math.PI);
+            context.closePath();
+            context.stroke();
+            context.beginPath();
+            context.moveTo(dx, this.params.Y);
+            context.arc(dx, this.params.Y, this.distance, 0, 1.5 * Math.PI);
+            context.closePath();
+            context.stroke();
+            context.beginPath();
+            context.moveTo(this.params.X, this.params.Y);
+            context.arc(this.params.X, this.params.Y, this.distance, -0.5 * Math.PI, Math.PI);
+            context.closePath();
+            context.stroke();
         }
         get distance() { return Math.max(parseInt(this.getAttribute('distance') || '') || 0, DEFALUT_DISTANCE); }
         set distance(value) { this.setAttribute('distance', value + ''); }

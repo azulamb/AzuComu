@@ -41,15 +41,15 @@ interface TrimingAreaElement extends HTMLElement
 			const style = document.createElement( 'style' );
 			style.innerHTML =
 			[
-				':host { display: none; width: 100%; height: 100%; top: 0; left: 0; position: absolute; background: rgba( 0, 0, 0, 0.8 ); overflow: hidden; }',
+				':host { display: none; width: 100%; height: 100%; top: 0; left: 0; position: absolute; background: rgba( 0, 0, 0, 0.8 ); overflow: hidden; --button-text: "Complete"; --button-border: none; --button-size: 1rem; --button-back: lightgray; --button-radius: 0.2rem; }',
 				':host( [show] ) { display: block; }',
 				':host > div { display: block; width: 100%; height: 100%; box-sizing: border-box; padding: 1rem; }',
 				':host > div > div { display: grid; grid-template-columns: 100%; grid-template-rows: calc(100% - 2rem) 2rem; width: 100%; height: 100%; }',
 				'.main { position: relative; }',
 				'.dragarea { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }',
 				'canvas { object-fit: contain; width: 100%; height: 100%; /*pointer-events: none; user-select: none; user-drag: none;*/ }',
-				'button { cursor: pointer; }',
-				'button::before { content: "完了"; }',
+				'button { cursor: pointer; border: var( --button-border ); font-size: var( --button-size ); background: var( --button-back ); border-radius: var( --button-radius ); }',
+				'button::before { content: var( --button-text ); }',
 			].join( '' );
 
 			this.canvas = document.createElement( 'canvas' );
@@ -116,9 +116,28 @@ interface TrimingAreaElement extends HTMLElement
 
 		private initMove( dragarea: HTMLElement )
 		{
-			let onmove: (null | (( event: MouseEvent ) => void) ) = null;
+			let onmove: (null | (( event: MouseEvent | TouchEvent ) => void) ) = null;
 
-			dragarea.addEventListener( 'mousedown', ( event ) =>
+			let touchMode = false;
+
+			const getSelectPosition = ( event: MouseEvent | TouchEvent ) =>
+			{
+				if ( (<MouseEvent>event).offsetX !== undefined )
+				{
+					return {
+						x: (<MouseEvent>event).offsetX,
+						y: (<MouseEvent>event).offsetY,
+					};
+				}
+				const touch = (<TouchEvent>event).changedTouches[ 0 ];
+				const bounds = dragarea.getBoundingClientRect();
+				return {
+					x: touch.clientX - bounds.left,
+					y: touch.clientY - bounds.top,
+				};
+			};
+
+			const begin = ( position: { x: number, y: number } ) =>
 			{
 				if ( onmove )
 				{
@@ -126,7 +145,7 @@ interface TrimingAreaElement extends HTMLElement
 					onmove = null;
 				}
 
-				const [ x, y ] = this.getPos( event.offsetX, event.offsetY, dragarea.offsetWidth, dragarea.offsetHeight );
+				const [ x, y ] = this.getPos( position.x, position.y, dragarea.offsetWidth, dragarea.offsetHeight );
 
 				const pos = [
 					{ type: 1, length: 0, x: this.params.x, y: this.params.y },
@@ -149,38 +168,74 @@ interface TrimingAreaElement extends HTMLElement
 				const outPoint = dis * dis + dis * dis < pos.length;
 				const outBox = x < this.params.x || this.params.X < x || y < this.params.y || this.params.Y < y;
 
-				if ( outPoint && outBox ) { return; }
+				if ( outPoint && outBox ) { return -1; }
 				if ( outPoint && !outBox ) { pos.type = 0; }
 				this.params.sx = x;
 				this.params.sy = y;
 
-				onmove = ( event ) => { this.onMove( event, dragarea, pos.type ); };
+				return pos.type;
+			};
+
+			const end = () =>
+			{
+				touchMode = false;
+				if ( onmove )
+				{
+					dragarea.removeEventListener( 'mousemove', onmove );
+					dragarea.removeEventListener( 'touchmove', onmove );
+					onmove = null;
+				}
+			};
+
+			dragarea.addEventListener( 'touchstart', ( event ) =>
+			{
+				touchMode = true;
+
+				const position = getSelectPosition( event );
+				const type = begin( position );
+				if ( type < 0 ) { return; }
+
+				onmove = ( event ) =>
+				{
+					const position = getSelectPosition( event );
+					this.onMove( position, dragarea, type );
+				};
+				dragarea.addEventListener( 'touchmove', onmove );
+				this.onMove( position, dragarea, type );
+			} );
+
+			dragarea.addEventListener( 'touchend', end );
+
+			dragarea.addEventListener( 'mousedown', ( event ) =>
+			{
+				if ( touchMode )
+				{
+					event.stopPropagation();
+					event.preventDefault();
+					return;
+				}
+
+				const position = getSelectPosition( event );
+				const type = begin( position );
+				if ( type < 0 ) { return; }
+
+				onmove = ( event ) =>
+				{
+					const position = getSelectPosition( event );
+					this.onMove( position, dragarea, type );
+				};
 				dragarea.addEventListener( 'mousemove', onmove );
-				this.onMove( event, dragarea, pos.type );
+				this.onMove( position, dragarea, type );
 			} );
 
-			dragarea.addEventListener( 'mouseup', () =>
-			{
-				if ( onmove )
-				{
-					dragarea.removeEventListener( 'mousemove', onmove );
-					onmove = null;
-				}
-			} );
+			dragarea.addEventListener( 'mouseup', end );
 
-			dragarea.addEventListener( 'mouseout', () =>
-			{
-				if ( onmove )
-				{
-					dragarea.removeEventListener( 'mousemove', onmove );
-					onmove = null;
-				}
-			} );
+			dragarea.addEventListener( 'mouseout', end );
 		}
 
-		private onMove( event: MouseEvent, dragarea: HTMLElement, type: number )
+		private onMove( position: { x: number, y: number }, dragarea: HTMLElement, type: number )
 		{
-			const [ x, y ] = this.getPos( event.offsetX, event.offsetY, dragarea.offsetWidth, dragarea.offsetHeight );
+			const [ x, y ] = this.getPos( position.x, position.y, dragarea.offsetWidth, dragarea.offsetHeight );
 
 			const fixAspect = 0 < this.width && 0 < this.height;
 			switch ( type )
@@ -378,6 +433,31 @@ interface TrimingAreaElement extends HTMLElement
 			context.fillRect( 0, dy, dx, dh );
 			context.fillRect( dx + dw, dy, width - dx - dw, dh );
 			context.fillRect( 0, dy + dh, width, height - dy - dh );
+			context.strokeStyle = 'white';
+			context.lineWidth = 4;
+			context.beginPath();
+			context.moveTo( dx, dy );
+			context.arc( dx, dy, this.distance, 0.5 * Math.PI, 0 );
+			context.closePath();
+			context.stroke();
+
+			context.beginPath();
+			context.moveTo( this.params.X, dy );
+			context.arc( this.params.X, dy, this.distance, Math.PI, 2.5 * Math.PI );
+			context.closePath();
+			context.stroke();
+
+			context.beginPath();
+			context.moveTo( dx, this.params.Y );
+			context.arc( dx, this.params.Y, this.distance, 0, 1.5 * Math.PI );
+			context.closePath();
+			context.stroke();
+
+			context.beginPath();
+			context.moveTo( this.params.X, this.params.Y );
+			context.arc( this.params.X, this.params.Y, this.distance, -0.5 * Math.PI, Math.PI );
+			context.closePath();
+			context.stroke();
 		}
 
 		get distance() { return Math.max( parseInt( this.getAttribute( 'distance' ) || '' ) || 0, DEFALUT_DISTANCE ); }

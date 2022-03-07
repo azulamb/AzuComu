@@ -43,9 +43,9 @@ interface DropFileEvent extends CustomEvent
 				':host( [loading] ) > div, :host( [loaded] ) > div { display: block; width: 100%; height: 100%; }',
 				'.hover { display: none; }',
 				':host( :hover ) .hover, .label { display: block; width: 100%; height: 100%; background: rgba( 0, 0, 0, 0.5 ); position: absolute; top: 0; left: 0; pointer-events: none; display: flex; justify-content: center; align-items: center; text-align: center; }',
-				'label .label::before { content: "ファイル選択"; }',
-				':host( [loading] ) > div .hover::before { content: "読込中"; }',
-				':host( [loaded] ) > div .hover::before { content: "編集"; }',
+				'label .label::before { content: "ファイル選択"; color: white; }',
+				':host( [loading] ) > div .hover::before { content: "読込中"; color: white; }',
+				':host( [loaded] ) > div .hover::before { content: "編集"; color: white; }',
 			].join( '' );
 
 			this.file = document.createElement( 'input' );
