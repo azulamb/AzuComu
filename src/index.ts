@@ -45,4 +45,15 @@ Promise.all(
 			document.body.dataset.page = target;
 		} );
 	} );
+
+	document.addEventListener( 'touchstart', ( event ) =>
+	{
+		if ( event.touches.length > 1 ) {
+		  event.preventDefault();
+		}
+	}, { passive: false } );
+	document.addEventListener( 'touchmove', ( event ) =>
+	{
+		event.preventDefault();
+	}, { passive: false } );
 } );
