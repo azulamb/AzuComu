@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<title>アズレンコミュサポート</title>
+<meta content="アズールレーンのコミュニティのサポートツール" name="description">
+<meta name="keywords" content="アズールレーン,Twitterコミュニティ">
+<script src="./app.js"></script>
+<style type="text/css">
+:root { --content-back: #729ee1; --page-back: #0c428d; }
+html { height: 100%; font-size: 3vmin; }
+body { height: 100%; overflow: hidden; padding: 0; margin: 0; position: relative; display: grid; grid-template-columns: 100%; grid-template-rows: 2rem calc(100% - 2rem); background: var( --page-back ); }
+a { color: #262e8d; }
+header { display: grid; grid-template-columns: 30% 30% 1fr 2rem; grid-template-rows: 100%; grid-template-areas: ". . . t";}
+section { display: none; overflow: hidden; background: var( --content-back ); }
+section#help { padding: 1rem; box-sizing: border-box; }
+header > button { border: none; background: var( --page-back ); color: white; font-size: 1rem; cursor: pointer; border-radius: 0.5rem 0.5rem 0 0; }
+header > button:hover { background: #547dbb; }
+[data-page="profile"] #go_profile, [data-page="help"] #go_help { background: var( --content-back ); color: black; }
+#go_profile::before { content: "プロフィール"; }
+#go_help::before { content: "このサイトについて"; }
+[data-page="profile"] section#profile, [data-page="help"] section#help { display: block; width: 100%; height: 100%; }
+</style>
+</head>
+<body data-page="profile">
+	<header>
+		<button id="go_profile"></button>
+		<button id="go_help"></button>
+		<a href="https://twitter.com/i/communities/1499994932710625284" style="grid-area:t;" target="_blank"><svg width="24px" height="24px" viewbox="0 0 24 24" style="width:100%;height:100%;"><path style="fill:#1da1f2;" d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"></path></svg></a>
+	</header>
+	<div>
+		<section id="profile">
+			<profile-area id="profileimg"></profile-area>
+			<triming-area id="editimg"></triming-area>
+		</section>
+		<section id="help">
+			<p><a href="https://twitter.com/i/communities/1499994932710625284" target="_blank">アズールレーンのコミュニティ</a>で使えるプロフィールを作成するツールです。</p>
+			<p><a href="https://twitter.com/royaloji/status/1500071174772244483" target="_blank">テンプレート</a>が提供されたのでそれに文字と画像を埋め込むことができます。</p>
+			<p>このツールはGitHub Pagesで作成され外部にデータを送信する機能はなく、送る予定もありません。何かあれば作者( <a href="https://twitter.com/azulitenet" target="_blank">Hiroki</a> )のDMを開放していますのでご連絡ください。ソースコードは<a href="https://github.com/Azulamb/AzuComu" target="_blank">こちら</a>。</p>
+		</section>
+	</div>
+</body>
+</html>
