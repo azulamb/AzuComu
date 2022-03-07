@@ -1,25 +1,25 @@
 /// <reference path="./components/profile-area.ts" />
-/// <reference path="./components/triming-area.ts" />
+/// <reference path="./components/trimming-area.ts" />
 
 Promise.all(
 [
-	customElements.whenDefined( 'triming-area' ),
+	customElements.whenDefined( 'trimming-area' ),
 	customElements.whenDefined( 'profile-area' ),
 ] ).then( () =>
 {
 	const profile = <ProfileAreaElement>document.getElementById( 'profileimg' );
-	const edit = <TrimingAreaElement>document.getElementById( 'editimg' );
+	const edit = <TrimmingAreaElement>document.getElementById( 'editimg' );
 
-	let triming: TrimingButtonElement;
+	let trimming: TrimmingButtonElement;
 	profile.addEventListener( 'edit', ( event ) =>
 	{
-		triming = event.detail.triming;
-		edit.x = triming.sx;
-		edit.y = triming.sy;
-		edit.w = triming.sw;
-		edit.h = triming.sh;
-		edit.width = event.detail.triming.dw;
-		edit.height = event.detail.triming.dh;
+		trimming = event.detail.trimming;
+		edit.x = trimming.sx;
+		edit.y = trimming.sy;
+		edit.w = trimming.sw;
+		edit.h = trimming.sh;
+		edit.width = event.detail.trimming.dw;
+		edit.height = event.detail.trimming.dh;
 		setTimeout( () =>
 		{
 			edit.setImage( event.detail.image );
@@ -29,10 +29,10 @@ Promise.all(
 
 	edit.addEventListener( 'change', () =>
 	{
-		triming.sx = edit.x;
-		triming.sy = edit.y;
-		triming.sw = edit.w;
-		triming.sh = edit.h;
+		trimming.sx = edit.x;
+		trimming.sy = edit.y;
+		trimming.sw = edit.w;
+		trimming.sh = edit.h;
 		profile.updateImage();
 		edit.show = false;
 	} );

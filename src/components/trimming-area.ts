@@ -1,4 +1,4 @@
-interface TrimingAreaElement extends HTMLElement
+interface TrimmingAreaElement extends HTMLElement
 {
 	setImage( img: HTMLImageElement ): void;
 	distance: number;
@@ -19,11 +19,11 @@ interface TrimingAreaElement extends HTMLElement
 {
 	const DEFALUT_DISTANCE = 40;
 
-	( ( component, tagname = 'triming-area' ) =>
+	( ( component, tagname = 'trimming-area' ) =>
 	{
 		if ( customElements.get( tagname ) ) { return; }
 		customElements.define( tagname, component );
-	} )( class extends HTMLElement implements TrimingAreaElement
+	} )( class extends HTMLElement implements TrimmingAreaElement
 	{
 		private canvas: HTMLCanvasElement;
 		private img: HTMLImageElement;
@@ -46,6 +46,8 @@ interface TrimingAreaElement extends HTMLElement
 				':host > div { display: block; width: 100%; height: 100%; box-sizing: border-box; padding: 1rem; }',
 				':host > div > div { display: grid; grid-template-columns: 100%; grid-template-rows: calc(100% - 2rem) 2rem; width: 100%; height: 100%; }',
 				'.main { position: relative; }',
+				'.sub {display: grid; grid-template-columns: 1fr 20%; grid-template-areas: ". c"; }',
+				'.sub button { grid-area: c; }',
 				'.dragarea { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }',
 				'canvas { object-fit: contain; width: 100%; height: 100%; /*pointer-events: none; user-select: none; user-drag: none;*/ }',
 				'button { cursor: pointer; border: var( --button-border ); font-size: var( --button-size ); background: var( --button-back ); border-radius: var( --button-radius ); }',
@@ -242,12 +244,19 @@ interface TrimingAreaElement extends HTMLElement
 			{
 				case 0:
 				{
-					const sx = this.params.sx - x;
-					const sy = this.params.sy - y;
-					this.params.x -= sx;
-					this.params.X -= sx;
-					this.params.y -= sy;
-					this.params.Y -= sy;
+					const move =
+					{
+						x: x - this.params.sx,
+						y: y - this.params.sy,
+					};
+					if ( this.params.x + move.x < 0 ) { move.x = - this.params.x; }
+					if ( this.canvas.width < this.params.X + move.x ) { move.x = this.canvas.width - this.params.X; }
+					if ( this.params.y + move.y < 0 ) { move.y = - this.params.y; }
+					if ( this.canvas.height < this.params.Y + move.y ) { move.y = this.canvas.height - this.params.Y; }
+					this.params.x += move.x;
+					this.params.X += move.x;
+					this.params.y += move.y;
+					this.params.Y += move.y;
 					this.params.sx = x;
 					this.params.sy = y;
 					break;

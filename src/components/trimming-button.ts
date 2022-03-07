@@ -1,4 +1,4 @@
-interface TrimingButtonElement extends HTMLElement
+interface TrimmingButtonElement extends HTMLElement
 {
 	addEventListener( type: 'close', listener: ( event: CustomEvent ) => any ): void;
 	addEventListener( type: 'main', listener: ( event: CustomEvent ) => any ): void;
@@ -19,11 +19,11 @@ interface TrimingButtonElement extends HTMLElement
 	document.addEventListener( 'DOMContentLoaded', () => { init( script ); } );
 } )( <HTMLScriptElement>document.currentScript, ( script: HTMLScriptElement ) =>
 {
-	( ( component, tagname = 'triming-button' ) =>
+	( ( component, tagname = 'trimming-button' ) =>
 	{
 		if ( customElements.get( tagname ) ) { return; }
 		customElements.define( tagname, component );
-	} )( class extends HTMLElement implements TrimingButtonElement
+	} )( class extends HTMLElement implements TrimmingButtonElement
 	{
 		constructor()
 		{

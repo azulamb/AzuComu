@@ -116,7 +116,7 @@
     }
     document.addEventListener('DOMContentLoaded', () => { init(script); });
 })(document.currentScript, (script) => {
-    ((component, tagname = 'triming-button') => {
+    ((component, tagname = 'trimming-button') => {
         if (customElements.get(tagname)) {
             return;
         }
@@ -174,7 +174,7 @@
 ((script, init) => {
     Promise.all([
         customElements.whenDefined('file-area'),
-        customElements.whenDefined('triming-button'),
+        customElements.whenDefined('trimming-button'),
     ]).then(() => { init(script); });
 })(document.currentScript, (script) => {
     const SERVERS = [
@@ -206,7 +206,7 @@
         constructor() {
             super();
             this.imgs = {};
-            this.triming = {};
+            this.trimming = {};
             this.commander = '';
             this.server = '';
             this.year = '';
@@ -219,7 +219,7 @@
                 [
                     ':host { display: block; width: 100%; height: 100%; }',
                     ':host > div { width: 100%; height: 100%; position: relative; }',
-                    ':host > div > footer { position: absolute; bottom: 0.1rem; left: 0; width: 50%; display: grid; grid-template-columns: 50% 50%; }',
+                    ':host > div > footer { position: absolute; bottom: 0.1rem; left: 0; width: 50%; height: 2rem; display: grid; grid-template-columns: 50% 50%; }',
                     ':host > div > footer > button { font-size: 1rem; cursor: pointer; background: #8cf5eb; border: none; border-radius: 0.2rem; margin: 0 0.1rem; }',
                     ':host > div > footer > button.preview::before { content: "プレビュー"; }',
                     ':host > div > footer > button.download::before { content: "ダウンロード"; }',
@@ -239,11 +239,14 @@
                     '.begin { top: 25.5%; left: 77%; width: 21%; height: 6%; grid-template-columns: 40% 30% 30%; }',
                     '.comment { top: 78.5%; left: 64%; width: 34%; height: 18.5%; }',
                     '.comment textarea { font-size: 100%; }',
-                    ':host( [preview] ) > div > div :not( canvas ):not( img ) { display: none; }',
+                    ':host( [preview] ) > div > div :not( img ) { display: none; }',
+                    ':host( [preview] ) > div > div > img { opacity: 1; }',
                 ].join('');
             this.canvas = document.createElement('canvas');
+            this.previewImg = document.createElement('img');
             this.frame = document.createElement('img');
             this.frame.onload = () => {
+                this.previewImg.src = './frame.png';
                 this.canvas.width = this.frame.naturalWidth;
                 this.canvas.height = this.frame.naturalHeight;
                 this.updateImage();
@@ -256,29 +259,29 @@
             shadow.appendChild(contents);
         }
         createInput() {
-            this.triming.main = new (customElements.get('triming-button'))();
-            this.triming.main.sw = 562;
-            this.triming.main.sh = 480;
-            this.triming.main.dx = 13;
-            this.triming.main.dy = 13;
-            this.triming.main.dw = 562;
-            this.triming.main.dh = 480;
-            this.triming.main.addEventListener('close', () => {
+            this.trimming.main = new (customElements.get('trimming-button'))();
+            this.trimming.main.sw = 562;
+            this.trimming.main.sh = 480;
+            this.trimming.main.dx = 13;
+            this.trimming.main.dy = 13;
+            this.trimming.main.dw = 562;
+            this.trimming.main.dh = 480;
+            this.trimming.main.addEventListener('close', () => {
                 main.loaded = false;
                 delete this.imgs.main;
                 this.updateImage();
                 main.reset();
             });
-            this.triming.main.addEventListener('main', () => {
+            this.trimming.main.addEventListener('main', () => {
                 if (!this.imgs.main) {
                     return;
                 }
-                this.onEdit(this.triming.main, this.imgs.main);
+                this.onEdit(this.trimming.main, this.imgs.main);
             });
             const main = new (customElements.get('file-area'))();
             main.id = 'main';
             main.accept = 'image/*';
-            main.appendChild(this.triming.main);
+            main.appendChild(this.trimming.main);
             main.addEventListener('dropfile', (event) => {
                 main.loading = true;
                 this.loadImage('main', event.detail.file, main);
@@ -286,29 +289,29 @@
             const wifes = [];
             for (let i = 0; i < 3; ++i) {
                 const key = `wife${i}`;
-                const triming = new (customElements.get('triming-button'))();
-                this.triming[key] = triming;
-                triming.dx = 581 + i * 101 + (i === 1 ? 1 : 0);
-                triming.dy = 223;
-                triming.dw = 97;
-                triming.dh = 126;
-                triming.sw = 97;
-                triming.sh = 126;
-                triming.addEventListener('close', () => {
+                const trimming = new (customElements.get('trimming-button'))();
+                this.trimming[key] = trimming;
+                trimming.dx = 581 + i * 101 + (i === 1 ? 1 : 0);
+                trimming.dy = 223;
+                trimming.dw = 97;
+                trimming.dh = 126;
+                trimming.sw = 97;
+                trimming.sh = 126;
+                trimming.addEventListener('close', () => {
                     wife.loaded = false;
                     delete this.imgs[key];
                     this.updateImage();
                 });
-                triming.addEventListener('main', () => {
+                trimming.addEventListener('main', () => {
                     const img = this.imgs[key];
                     if (!img) {
                         return;
                     }
-                    this.onEdit(triming, img);
+                    this.onEdit(trimming, img);
                 });
                 const wife = new (customElements.get('file-area'))();
                 wife.accept = 'image/*';
-                wife.appendChild(this.triming[key]);
+                wife.appendChild(this.trimming[key]);
                 wife.addEventListener('dropfile', (event) => {
                     wife.loading = true;
                     this.loadImage(`wife${i}`, event.detail.file, wife);
@@ -320,7 +323,7 @@
                 wifes.push(block);
             }
             const wrapper = document.createElement('div');
-            wrapper.appendChild(this.frame);
+            wrapper.appendChild(this.previewImg);
             wrapper.appendChild(this.canvas);
             wrapper.appendChild(main);
             for (const wife of wifes) {
@@ -437,12 +440,24 @@
             footer.appendChild(download);
             return footer;
         }
-        drawText(context, x, y, width, height, text) {
+        setFontSetting(context) {
             context.textBaseline = 'middle';
-            context.font = 'bold 26px i-rounded';
+            context.font = '500 28px "Yu Gothic"';
+            context.font = [
+                'normal normal 500 normal 28px normal "游ゴシック体"',
+                'normal normal 500 normal 28px normal YuGothic',
+                'normal normal 500 normal 28px normal "游ゴシック"',
+                'normal normal 500 normal 28px normal "Yu Gothic"',
+                'normal normal 500 normal 28px normal sans-serif',
+            ].join(', ');
             context.fillStyle = 'white';
             context.strokeStyle = '#515151';
-            context.lineWidth = 4;
+            context.lineWidth = 6;
+            context.lineJoin = 'round';
+            context.lineCap = 'round';
+        }
+        drawText(context, x, y, width, height, text) {
+            this.setFontSetting(context);
             const texts = text.split(/\r\n|\n|\r/);
             const w = texts.map((text) => {
                 return context.measureText(text).width + 4;
@@ -453,11 +468,7 @@
                 canvas.width = w;
                 canvas.height = Math.max(h, height);
                 const ctx = canvas.getContext('2d');
-                ctx.textBaseline = 'middle';
-                ctx.font = 'bold 26px i-rounded';
-                ctx.fillStyle = 'white';
-                ctx.strokeStyle = '#515151';
-                ctx.lineWidth = 4;
+                this.setFontSetting(ctx);
                 for (let i = 0; i < texts.length; ++i) {
                     ctx.strokeText(texts[i], 2, 20 + i * 40);
                     ctx.fillText(texts[i], 2, 20 + i * 40);
@@ -473,18 +484,18 @@
             const context = this.canvas.getContext('2d');
             context.clearRect(0, 0, this.canvas.width, this.canvas.height);
             if (this.imgs.main) {
-                context.drawImage(this.imgs.main, this.triming.main.sx, this.triming.main.sy, this.triming.main.sw, this.triming.main.sh, this.triming.main.dx, this.triming.main.dy, this.triming.main.dw, this.triming.main.dh);
+                context.drawImage(this.imgs.main, this.trimming.main.sx, this.trimming.main.sy, this.trimming.main.sw, this.trimming.main.sh, this.trimming.main.dx, this.trimming.main.dy, this.trimming.main.dw, this.trimming.main.dh);
             }
             if (this.imgs.wife0) {
-                const wife = this.triming.wife0;
+                const wife = this.trimming.wife0;
                 context.drawImage(this.imgs.wife0, wife.sx, wife.sy, wife.sw, wife.sh, wife.dx, wife.dy, wife.dw, wife.dh);
             }
             if (this.imgs.wife1) {
-                const wife = this.triming.wife1;
+                const wife = this.trimming.wife1;
                 context.drawImage(this.imgs.wife1, wife.sx, wife.sy, wife.sw, wife.sh, wife.dx, wife.dy, wife.dw, wife.dh);
             }
             if (this.imgs.wife2) {
-                const wife = this.triming.wife2;
+                const wife = this.trimming.wife2;
                 context.drawImage(this.imgs.wife2, wife.sx, wife.sy, wife.sw, wife.sh, wife.dx, wife.dy, wife.dw, wife.dh);
             }
             context.drawImage(this.frame, 0, 0);
@@ -514,9 +525,9 @@
             }, false);
             reader.readAsDataURL(file);
         }
-        onEdit(triming, image) {
+        onEdit(trimming, image) {
             const detail = {
-                triming: triming,
+                trimming: trimming,
                 image: image,
             };
             this.dispatchEvent(new CustomEvent('edit', {
@@ -524,12 +535,15 @@
             }));
         }
         get preview() { return this.hasAttribute('preview'); }
-        set preview(value) { if (!value) {
-            this.removeAttribute('preview');
+        set preview(value) {
+            if (!value) {
+                this.removeAttribute('preview');
+            }
+            else {
+                this.setAttribute('preview', '');
+                this.previewImg.src = this.canvas.toDataURL();
+            }
         }
-        else {
-            this.setAttribute('preview', '');
-        } }
     }, script.dataset.tagname);
 });
 ((script, init) => {
@@ -539,7 +553,7 @@
     document.addEventListener('DOMContentLoaded', () => { init(script); });
 })(document.currentScript, (script) => {
     const DEFALUT_DISTANCE = 40;
-    ((component, tagname = 'triming-area') => {
+    ((component, tagname = 'trimming-area') => {
         if (customElements.get(tagname)) {
             return;
         }
@@ -559,6 +573,8 @@
                     ':host > div { display: block; width: 100%; height: 100%; box-sizing: border-box; padding: 1rem; }',
                     ':host > div > div { display: grid; grid-template-columns: 100%; grid-template-rows: calc(100% - 2rem) 2rem; width: 100%; height: 100%; }',
                     '.main { position: relative; }',
+                    '.sub {display: grid; grid-template-columns: 1fr 20%; grid-template-areas: ". c"; }',
+                    '.sub button { grid-area: c; }',
                     '.dragarea { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }',
                     'canvas { object-fit: contain; width: 100%; height: 100%; /*pointer-events: none; user-select: none; user-drag: none;*/ }',
                     'button { cursor: pointer; border: var( --button-border ); font-size: var( --button-size ); background: var( --button-back ); border-radius: var( --button-radius ); }',
@@ -710,12 +726,26 @@
             switch (type) {
                 case 0:
                     {
-                        const sx = this.params.sx - x;
-                        const sy = this.params.sy - y;
-                        this.params.x -= sx;
-                        this.params.X -= sx;
-                        this.params.y -= sy;
-                        this.params.Y -= sy;
+                        const move = {
+                            x: x - this.params.sx,
+                            y: y - this.params.sy,
+                        };
+                        if (this.params.x + move.x < 0) {
+                            move.x = -this.params.x;
+                        }
+                        if (this.canvas.width < this.params.X + move.x) {
+                            move.x = this.canvas.width - this.params.X;
+                        }
+                        if (this.params.y + move.y < 0) {
+                            move.y = -this.params.y;
+                        }
+                        if (this.canvas.height < this.params.Y + move.y) {
+                            move.y = this.canvas.height - this.params.Y;
+                        }
+                        this.params.x += move.x;
+                        this.params.X += move.x;
+                        this.params.y += move.y;
+                        this.params.Y += move.y;
                         this.params.sx = x;
                         this.params.sy = y;
                         break;
@@ -913,30 +943,30 @@
     }, script.dataset.tagname);
 });
 Promise.all([
-    customElements.whenDefined('triming-area'),
+    customElements.whenDefined('trimming-area'),
     customElements.whenDefined('profile-area'),
 ]).then(() => {
     const profile = document.getElementById('profileimg');
     const edit = document.getElementById('editimg');
-    let triming;
+    let trimming;
     profile.addEventListener('edit', (event) => {
-        triming = event.detail.triming;
-        edit.x = triming.sx;
-        edit.y = triming.sy;
-        edit.w = triming.sw;
-        edit.h = triming.sh;
-        edit.width = event.detail.triming.dw;
-        edit.height = event.detail.triming.dh;
+        trimming = event.detail.trimming;
+        edit.x = trimming.sx;
+        edit.y = trimming.sy;
+        edit.w = trimming.sw;
+        edit.h = trimming.sh;
+        edit.width = event.detail.trimming.dw;
+        edit.height = event.detail.trimming.dh;
         setTimeout(() => {
             edit.setImage(event.detail.image);
             edit.show = true;
         });
     });
     edit.addEventListener('change', () => {
-        triming.sx = edit.x;
-        triming.sy = edit.y;
-        triming.sw = edit.w;
-        triming.sh = edit.h;
+        trimming.sx = edit.x;
+        trimming.sy = edit.y;
+        trimming.sw = edit.w;
+        trimming.sh = edit.h;
         profile.updateImage();
         edit.show = false;
     });
