@@ -21,6 +21,7 @@ header > button:hover { background: #547dbb; }
 #go_profile::before { content: "プロフィール"; }
 #go_help::before { content: "このサイトについて"; }
 [data-page="profile"] section#profile, [data-page="help"] section#help { display: block; width: 100%; height: 100%; }
+section#help { overflow: auto; }
 </style>
 </head>
 <body data-page="profile">
@@ -39,7 +40,25 @@ header > button:hover { background: #547dbb; }
 			<p><a href="https://twitter.com/royaloji/status/1500071174772244483" target="_blank">テンプレート</a>が提供されていたのでそれに文字と画像を埋め込むことができます。</p>
 			<p>このツールはGitHub Pagesに設置され外部にデータを送信する機能はなく、送る予定もありません。何かあれば作者( <a href="https://twitter.com/azulitenet" target="_blank">Hiroki</a> )のDMを開放していますのでご連絡ください。ソースコードは<a href="https://github.com/Azulamb/AzuComu" target="_blank">こちら</a>。</p>
 			<h3>iOSについて</h3>
-			<p>場合によってはダウンロードしたファイルが一覧に出てこないかもしれません。その場合は「ファイル」アプリでダウンロードフォルダを開き、画像を選択してください。シェアボタンを押した後出てくる項目のうち「画像を保存」をタップすることで画像一覧に追加されます。</p>
+			<p>場合によってはダウンロードしたファイルが一覧に出てこないかもしれません。その場合は以下のどちらかの方法でカメラロールに追加してください。</p>
+			<p>
+				<ul>
+					<li>
+						プレビュー状態で画像をロングタップして「”写真”に追加」をタップしてください。
+						<ul>
+							<li>こちらの方がお手軽です。</li>
+						</ul>
+					</li>
+					<li>
+						ダウンロードでファイルをダウンロードした後カメラロールに追加します。
+						<ul>
+							<li>「ファイル」アプリでダウンロードフォルダを開きます。</li>
+							<li>画像を選択してください。</li>
+							<li>シェアボタンを押した後出てくる項目のうち「画像を保存」をタップしてください。</li>
+						</ul>
+					</li>
+				</ul>
+			</p>
 		</section>
 	</div>
 </body>
